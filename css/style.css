@@ -52,6 +52,11 @@ button {
   object-fit: cover;
   display: block;
 }
+@media all and (min-width:768px){
+  .opening-video {
+  width: auto;
+}
+}
 .opening-shade {
   position: absolute;
   inset: 0;
@@ -743,7 +748,8 @@ h2 {
     gap: 12px;
   }
   .couple-name {
-    font-size: clamp(2.4rem, 9vw, 4rem);
+    /* font-size: clamp(2.4rem, 9vw, 4rem); */
+    font-size: 30px;
   }
   .parent-line {
     font-size: 0.56rem;
