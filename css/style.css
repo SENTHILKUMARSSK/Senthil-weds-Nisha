@@ -746,7 +746,7 @@ h2 {
     font-size: clamp(2.4rem, 9vw, 4rem);
   }
   .parent-line {
-    font-size: 0.86rem;
+    font-size: 0.56rem;
   }
   .ampersand {
     font-size: 1.9rem;
