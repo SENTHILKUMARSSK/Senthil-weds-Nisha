@@ -120,6 +120,7 @@ button {
   text-transform: uppercase;
   text-shadow: 0 2px 10px #000;
   white-space: nowrap;
+  text-align:center ;
 }
 .invitation {
   opacity: 0;
