@@ -30,7 +30,10 @@ musicToggle?.addEventListener('click', async () => {
 });
 updateMusicControl();
 
+let entered = false;
 function enterInvitation(){
+  if(entered) return;
+  entered = true;
   opening.classList.add('hide');
   invitation.classList.add('show');
   invitation.setAttribute('aria-hidden','false');
@@ -39,9 +42,15 @@ function enterInvitation(){
   window.scrollTo({top:0,behavior:'instant'});
 }
 
-sealButton.addEventListener('click', () => {
-  sealButton.disabled = true;
-  tapText.style.opacity = '0';
+let openingStarted = false;
+let openingStartTime = 0;
+
+function startOpening(){
+  if(openingStarted) return;
+  openingStarted = true;
+  openingStartTime = Date.now();
+  if(sealButton) sealButton.disabled = true;
+  if(tapText) tapText.style.opacity = '0';
 
   // Start the full background track directly from the wax-seal user gesture.
   // Calling play() synchronously here keeps browser autoplay policies satisfied.
@@ -52,10 +61,49 @@ sealButton.addEventListener('click', () => {
     if(musicOn) bgm.play().catch(() => {});
   } catch(e) {}
 
-  openingVideo.currentTime = 0;
-  try { openingVideo.play().catch(() => {}); } catch(e) {}
+  // Explicitly ensure muted on iOS Safari so it doesn't fight audio or fail policy
+  if(openingVideo){
+    openingVideo.muted = true;
+    try { openingVideo.currentTime = 0; } catch(e) {}
+    let playPromise;
+    try {
+      playPromise = openingVideo.play();
+    } catch(e) {
+      enterInvitation();
+      return;
+    }
+    if(playPromise !== undefined){
+      playPromise.catch(() => {
+        // Fallback directly to invitation if video playback is blocked/fails
+        enterInvitation();
+      });
+    }
+  }
+
+  // Safety fallback: if video stalls or ended event doesn't fire within 8.5s
+  setTimeout(enterInvitation, 8500);
+}
+
+sealButton?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  startOpening();
 });
-openingVideo.addEventListener('ended', enterInvitation);
+
+tapText?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  startOpening();
+});
+
+opening?.addEventListener('click', () => {
+  if(!openingStarted){
+    startOpening();
+  } else if(Date.now() - openingStartTime > 800){
+    enterInvitation();
+  }
+});
+
+openingVideo?.addEventListener('ended', enterInvitation);
+openingVideo?.addEventListener('error', enterInvitation);
 
 // One-swipe scratch reveal. A tap alone never reveals a card.
 const revealCards = document.querySelectorAll('[data-reveal]');
